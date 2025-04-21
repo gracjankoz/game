@@ -18,11 +18,6 @@ const pathPoints = [
     {x: 937, y: 600}
 ];
 
-// Parametry przeciwnika
-let enemyPos = 0;
-let enemyProgress = 0;
-const enemySpeed = 0.001;
-
 // Funkcja rysująca trasę
 function drawPath() {
     ctx.strokeStyle = 'black';
@@ -35,52 +30,94 @@ function drawPath() {
     ctx.stroke();
 }
 
-// Funkcja aktualizująca pozycję przeciwnika
+let hp = 20;
+let spawnTimer = 0;
+const enemies = []; // Teraz przechowujemy wszystkich przeciwników w tablicy
+
+// Parametry przeciwnika
+let enemyPos = 0;
+let enemyProgress = 0;
+const enemySpeed = 0.001;
+// Parametry gry
+const spawnInterval = 10000; // Co 2 sekundy nowy przeciwnik (w ms)
+
+// Funkcja tworząca nowego przeciwnika
+function spawnEnemy() {
+    enemies.push({
+        pos: 0,
+        progress: 0
+    });
+}
+
+// Modyfikacja funkcji updateEnemy
 function updateEnemy() {
-    if (enemyPos >= pathPoints.length - 1) return; // Jeśli doszedł do końca
-    
-    const start = pathPoints[enemyPos];
-    const end = pathPoints[enemyPos + 1];
-    
-    // Oblicz aktualną pozycję
-    const currentX = start.x + (end.x - start.x) * enemyProgress;
-    const currentY = start.y + (end.y - start.y) * enemyProgress;
-    
-    // Zwiększ postęp
-    enemyProgress += enemySpeed;
-    
-    // Przejdź do następnego segmentu trasy
-    if (enemyProgress >= 1) {
-        enemyPos++;
-        enemyProgress = 0;
-    }
+    enemies.forEach((enemy, index) => {
+        if (enemy.pos >= pathPoints.length - 1) {
+            // Przeciwnik dotarł do końca - odejmij HP i usuń go
+            hp--;
+            enemies.splice(index, 1);
+            return;
+        }
+
+        const start = pathPoints[enemy.pos];
+        const end = pathPoints[enemy.pos + 1];
+        
+        enemy.progress += enemySpeed;
+        
+        if (enemy.progress >= 1) {
+            enemy.pos++;
+            enemy.progress = 0;
+        }
+    });
 }
 
-// Funkcja rysująca przeciwnika
+// Modyfikacja funkcji drawEnemy
 function drawEnemy() {
-    const start = pathPoints[enemyPos];
-    const end = pathPoints[Math.min(enemyPos + 1, pathPoints.length - 1)];
-    
-    const x = start.x + (end.x - start.x) * enemyProgress;
-    const y = start.y + (end.y - start.y) * enemyProgress;
-    
-    ctx.fillStyle = 'red';
-    ctx.beginPath();
-    ctx.arc(x, y, 10, 0, Math.PI * 2);
-    ctx.fill();
+    enemies.forEach(enemy => {
+        const start = pathPoints[enemy.pos];
+        const end = pathPoints[Math.min(enemy.pos + 1, pathPoints.length - 1)];
+        
+        const x = start.x + (end.x - start.x) * enemy.progress;
+        const y = start.y + (end.y - start.y) * enemy.progress;
+        
+        ctx.fillStyle = 'red';
+        ctx.beginPath();
+        ctx.arc(x, y, 10, 0, Math.PI * 2);
+        ctx.fill();
+    });
 }
 
-// Główna pętla gry
-function gameLoop() {
-    // Czyszczenie ekranu
+// Nowa funkcja do rysowania HP
+function drawHP() {
+    ctx.fillStyle = 'black';
+    ctx.font = '24px Arial';
+    ctx.fillText(`HP: ${hp}`, 20, 30);
+}
+
+// Modyfikacja głównej pętli gry
+function gameLoop(timestamp) {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     
-    // Rysowanie elementów
+    // Sprawdź czy trzeba dodać nowego przeciwnika
+    spawnTimer += 16; // Zakładamy ~60 klatek/sek (16ms na klatkę)
+    if (spawnTimer >= spawnInterval) {
+        spawnEnemy();
+        spawnTimer = 0;
+    }
+    
     drawPath();
     updateEnemy();
     drawEnemy();
+    drawHP();
     
-    // Następna klatka animacji
+    // Sprawdź przegraną
+    if (hp <= 0) {
+        ctx.fillStyle = 'red';
+        ctx.font = '48px Arial';
+        ctx.fillText('PRZEGRANA!', canvas.width/2 - 120, canvas.height/2);
+        return;
+    }
+    
     requestAnimationFrame(gameLoop);
 }
 
