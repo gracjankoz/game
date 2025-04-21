@@ -1,3 +1,15 @@
+//  TODO:
+//  ustawienie tego żeby podświetlenie range było adekwatne i nie wpisywane "z ręki" tylko z zmiennej range która może być w przyszłości zwiększana
+//  money
+//  utrudnianie w późniejszej fazie gry (więcej przeciwników, więcej HP enemies)
+//  ulepszanie wieży
+//  cennik jak i sterownie (instrukcja na boku po lewo i po prawo)
+//  koniec gry (np. po zabiciu 1000 przeciwnikow)
+
+//  OPCJONALNE:
+//  mapa
+//  animacja i grafika przeciwników jak i wieży
+
 const canvas = document.getElementById('canvas');
 canvas.width = 1000;
 canvas.height = 600;
@@ -97,7 +109,7 @@ class Tower {
   constructor(x, y) {
       this.x = x;
       this.y = y;
-      this.range = 150; // Zasięg w pikselach
+      this.range =  100; // Zasięg w pikselach
       this.cooldown = 0;
       this.fireRate = 1; // Strzały na sekundę
       this.projectiles = [];
@@ -239,7 +251,7 @@ function drawTowerPreview() {
   ctx.globalAlpha = 0.2;
   ctx.fillStyle = 'blue';
   ctx.beginPath();
-  ctx.arc(mouseX, mouseY, 150, 0, Math.PI * 2);
+  ctx.arc(mouseX, mouseY, 100 , 0, Math.PI * 2);
   ctx.fill();
   ctx.restore();
 
