@@ -51,25 +51,23 @@ function spawnEnemy() {
 
 // Modyfikacja funkcji updateEnemy
 function updateEnemy() {
-    enemies.forEach((enemy, index) => {
-        if (enemy.pos >= pathPoints.length - 1) {
-            // Przeciwnik dotarł do końca - odejmij HP i usuń go
-            hp--;
-            enemies.splice(index, 1);
-            return;
-        }
-
-        const start = pathPoints[enemy.pos];
-        const end = pathPoints[enemy.pos + 1];
-        
-        enemy.progress += enemySpeed;
-        
-        if (enemy.progress >= 1) {
-            enemy.pos++;
-            enemy.progress = 0;
-        }
-    });
+  for (let i = enemies.length - 1; i >= 0; i--) {
+      let enemy = enemies[i];
+      if (enemy.pos >= pathPoints.length - 1) {
+          hp--;
+          enemies.splice(i, 1);
+          continue;
+      }
+      const start = pathPoints[enemy.pos];
+      const end = pathPoints[enemy.pos + 1];
+      enemy.progress += enemySpeed;
+      if (enemy.progress >= 1) {
+          enemy.pos++;
+          enemy.progress = 0;
+      }
+  }
 }
+
 
 // Modyfikacja funkcji drawEnemy
 function drawEnemy() {
@@ -94,6 +92,69 @@ function drawHP() {
     ctx.fillText(`HP: ${hp}`, 20, 30);
 }
 
+//Śledzenie myszy
+let mouseX = 0;
+let mouseY = 0;
+
+canvas.addEventListener('mousemove', (e) => {
+    const rect = canvas.getBoundingClientRect();
+    mouseX = e.clientX - rect.left;
+    mouseY = e.clientY - rect.top;
+});
+
+const towers = [];
+let spacePressed = false;
+
+// Nasłuchiwanie klawiszy
+document.addEventListener('keydown', (e) => {
+    if (e.code === 'Space') spacePressed = true;
+});
+
+document.addEventListener('keyup', (e) => {
+    if (e.code === 'Space') spacePressed = false;
+});
+
+// Nasłuchiwanie ruchu myszy
+canvas.addEventListener('mousemove', (e) => {
+    const rect = canvas.getBoundingClientRect();
+    mouseX = e.clientX - rect.left;
+    mouseY = e.clientY - rect.top;
+});
+
+// Nasłuchiwanie kliknięcia myszą (tylko gdy trzymana jest spacja)
+canvas.addEventListener('click', (e) => {
+    if (spacePressed) {
+        towers.push({ x: mouseX, y: mouseY });
+    }
+});
+
+
+// Rysowanie wież
+function drawTowers() {
+  towers.forEach(tower => {
+      ctx.fillStyle = 'blue';
+      ctx.fillRect(tower.x - 15, tower.y - 15, 30, 30); // Kwadrat 30x30px, środek w miejscu kliknięcia
+      ctx.strokeStyle = 'black';
+      ctx.lineWidth = 2;
+      ctx.strokeRect(tower.x - 15, tower.y - 15, 30, 30);
+  });
+}
+
+//Podgląd gdzie będzie wieża
+function drawTowerPreview() {
+  if (!spacePressed) return;
+  
+  ctx.save();
+  ctx.globalAlpha = 0.5;
+  ctx.fillStyle = 'blue';
+  ctx.fillRect(mouseX - 15, mouseY - 15, 30, 30);
+  ctx.strokeStyle = 'black';
+  ctx.lineWidth = 2;
+  ctx.strokeRect(mouseX - 15, mouseY - 15, 30, 30);
+  ctx.restore();
+}
+
+
 // Modyfikacja głównej pętli gry
 function gameLoop(timestamp) {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -108,18 +169,26 @@ function gameLoop(timestamp) {
     drawPath();
     updateEnemy();
     drawEnemy();
+    drawTowerPreview()
+    drawTowers();
     drawHP();
     
     // Sprawdź przegraną
     if (hp <= 0) {
-        ctx.fillStyle = 'red';
-        ctx.font = '48px Arial';
-        ctx.fillText('PRZEGRANA!', canvas.width/2 - 120, canvas.height/2);
-        return;
-    }
+      ctx.fillStyle = 'red';
+      ctx.font = '48px Arial';
+      ctx.fillText('PRZEGRANA!', canvas.width/2 - 120, canvas.height/2);
+  
+      // Pokaż przycisk restartu
+      document.getElementById('restartBtn').style.display = 'block';
+      return;
+  }
+  
     
     requestAnimationFrame(gameLoop);
 }
 
 // Uruchomienie gry
 gameLoop();
+
+document.getElementById('restartBtn').addEventListener('click', resetGame)
