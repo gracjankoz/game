@@ -92,16 +92,6 @@ function drawHP() {
     ctx.fillText(`HP: ${hp}`, 20, 30);
 }
 
-//Śledzenie myszy
-let mouseX = 0;
-let mouseY = 0;
-
-canvas.addEventListener('mousemove', (e) => {
-    const rect = canvas.getBoundingClientRect();
-    mouseX = e.clientX - rect.left;
-    mouseY = e.clientY - rect.top;
-});
-
 const towers = [];
 let spacePressed = false;
 
@@ -115,6 +105,9 @@ document.addEventListener('keyup', (e) => {
 });
 
 // Nasłuchiwanie ruchu myszy
+let mouseX = 0;
+let mouseY = 0;
+
 canvas.addEventListener('mousemove', (e) => {
     const rect = canvas.getBoundingClientRect();
     mouseX = e.clientX - rect.left;
@@ -191,4 +184,6 @@ function gameLoop(timestamp) {
 // Uruchomienie gry
 gameLoop();
 
-document.getElementById('restartBtn').addEventListener('click', resetGame)
+document.getElementById('restartBtn').addEventListener('click', () => {
+  window.location.reload();
+})
