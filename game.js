@@ -41,30 +41,28 @@ const enemySpeed = 0.001;
 // Parametry gry
 const spawnInterval = 10000; // Co 2 sekundy nowy przeciwnik (w ms)
 
-// Funkcja tworząca nowego przeciwnika
-function spawnEnemy() {
-    enemies.push({
-        pos: 0,
-        progress: 0
-    });
-}
-
 // Modyfikacja funkcji updateEnemy
 function updateEnemy() {
+
   for (let i = enemies.length - 1; i >= 0; i--) {
-      let enemy = enemies[i];
-      if (enemy.pos >= pathPoints.length - 1) {
-          hp--;
-          enemies.splice(i, 1);
-          continue;
-      }
-      const start = pathPoints[enemy.pos];
-      const end = pathPoints[enemy.pos + 1];
-      enemy.progress += enemySpeed;
-      if (enemy.progress >= 1) {
-          enemy.pos++;
-          enemy.progress = 0;
-      }
+    let enemy = enemies[i];
+    
+    if (enemy.hp <= 0) {
+        enemies.splice(i, 1);
+        continue;
+    }
+    if (enemy.pos >= pathPoints.length - 1) {
+        hp--;
+        enemies.splice(i, 1);
+        continue;
+    }
+    const start = pathPoints[enemy.pos];
+    const end = pathPoints[enemy.pos + 1];
+    enemy.progress += enemySpeed;
+    if (enemy.progress >= 1) {
+        enemy.pos++;
+        enemy.progress = 0;
+    }
   }
 }
 
@@ -95,6 +93,105 @@ function drawHP() {
 const towers = [];
 let spacePressed = false;
 
+class Tower {
+  constructor(x, y) {
+      this.x = x;
+      this.y = y;
+      this.range = 150; // Zasięg w pikselach
+      this.cooldown = 0;
+      this.fireRate = 1; // Strzały na sekundę
+      this.projectiles = [];
+  }
+}
+
+// HP przeciwników
+function spawnEnemy() {
+  enemies.push({
+      pos: 0,
+      progress: 0,
+      hp: 1 
+  });
+}
+
+// Tablica pocisków
+const projectiles = [];
+
+// Aktualizacja logiki wież
+function updateTowers() {
+  towers.forEach(tower => {
+      tower.cooldown = Math.max(0, tower.cooldown - 1);
+      
+      // Szukaj celu w zasięgu
+      if (tower.cooldown <= 0) {
+          let target = null;
+          let furthestProgress = -1;
+          
+          enemies.forEach(enemy => {
+              const enemyPos = getEnemyPosition(enemy);
+              const dx = enemyPos.x - tower.x;
+              const dy = enemyPos.y - tower.y;
+              const distance = Math.sqrt(dx*dx + dy*dy);
+              
+              if (distance <= tower.range && enemy.pos > furthestProgress) {
+                  target = enemy;
+                  furthestProgress = enemy.pos;
+              }
+          });
+          
+          // Strzel jeśli znaleziono cel
+          if (target) {
+              const targetPos = getEnemyPosition(target);
+              projectiles.push({
+                  from: {x: tower.x, y: tower.y},
+                  to: {x: targetPos.x, y: targetPos.y},
+                  progress: 0,
+                  speed: 0.1,
+                  target: target
+              });
+              tower.cooldown = 60 / tower.fireRate; // 60 klatek/sek
+          }
+      }
+  });
+}
+
+// Aktualizacja pocisków
+function updateProjectiles() {
+  for (let i = projectiles.length - 1; i >= 0; i--) {
+      const projectile = projectiles[i];
+      projectile.progress += projectile.speed;
+      
+      // Sprawdź trafienie
+      if (projectile.progress >= 1) {
+          projectile.target.hp -= 1;
+          projectiles.splice(i, 1);
+      }
+  }
+}
+
+// Pomocnicza funkcja do pobierania pozycji przeciwnika
+function getEnemyPosition(enemy) {
+  const start = pathPoints[enemy.pos];
+  const end = pathPoints[Math.min(enemy.pos + 1, pathPoints.length - 1)];
+  return {
+      x: start.x + (end.x - start.x) * enemy.progress,
+      y: start.y + (end.y - start.y) * enemy.progress
+  };
+}
+
+// Rysowanie pocisków
+function drawProjectiles() {
+  projectiles.forEach(projectile => {
+      ctx.strokeStyle = 'orange';
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      ctx.moveTo(projectile.from.x, projectile.from.y);
+      const currentX = projectile.from.x + (projectile.to.x - projectile.from.x) * projectile.progress;
+      const currentY = projectile.from.y + (projectile.to.y - projectile.from.y) * projectile.progress;
+      ctx.lineTo(currentX, currentY);
+      ctx.stroke();
+  });
+}
+
 // Nasłuchiwanie klawiszy
 document.addEventListener('keydown', (e) => {
     if (e.code === 'Space') spacePressed = true;
@@ -117,7 +214,7 @@ canvas.addEventListener('mousemove', (e) => {
 // Nasłuchiwanie kliknięcia myszą (tylko gdy trzymana jest spacja)
 canvas.addEventListener('click', (e) => {
     if (spacePressed) {
-        towers.push({ x: mouseX, y: mouseY });
+        towers.push(new Tower(mouseX, mouseY));
     }
 });
 
@@ -136,7 +233,16 @@ function drawTowers() {
 //Podgląd gdzie będzie wieża
 function drawTowerPreview() {
   if (!spacePressed) return;
-  
+    
+    
+  ctx.save();
+  ctx.globalAlpha = 0.2;
+  ctx.fillStyle = 'blue';
+  ctx.beginPath();
+  ctx.arc(mouseX, mouseY, 150, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.restore();
+
   ctx.save();
   ctx.globalAlpha = 0.5;
   ctx.fillStyle = 'blue';
@@ -162,7 +268,10 @@ function gameLoop(timestamp) {
     drawPath();
     updateEnemy();
     drawEnemy();
-    drawTowerPreview()
+    drawTowerPreview();
+    updateTowers();
+    updateProjectiles();
+    drawProjectiles();
     drawTowers();
     drawHP();
     
