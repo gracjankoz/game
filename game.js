@@ -8,6 +8,7 @@
 //  mapa
 //  animacja i grafika przeciwników jak i wieży
 
+let gameOver = false;
 const canvas = document.getElementById('canvas');
 canvas.width = 1000;
 canvas.height = 600;
@@ -61,30 +62,41 @@ const enemySpeed = 0.001;
 const spawnInterval = 7000; // Co 2 sekundy nowy przeciwnik (w ms)
 let enemiesKilled = 0;
 function updateEnemy() {
-
-  for (let i = enemies.length - 1; i >= 0; i--) {
-    let enemy = enemies[i];
-    
-    if (enemy.hp <= 0) {
+    for (let i = enemies.length - 1; i >= 0; i--) {
+      let enemy = enemies[i];
+  
+      if (enemy.hp <= 0) {
         enemies.splice(i, 1);
         money += ENEMY_REWARD;
         enemiesKilled++;
+  
+        if (enemiesKilled >= 200) {
+          ctx.fillStyle = 'green';
+          ctx.font = '48px Arial';
+          ctx.fillText('WYGRAŁEŚ!', canvas.width/2 - 120, canvas.height/2);
+          document.getElementById('restartBtn').style.display = 'block';
+          gameOver = true;
+          return;
+        }
         continue;
-    }
-    if (enemy.pos >= pathPoints.length - 1) {
+      }
+  
+      if (enemy.pos >= pathPoints.length - 1) {
         hp--;
         enemies.splice(i, 1);
         continue;
-    }
-    const start = pathPoints[enemy.pos];
-    const end = pathPoints[enemy.pos + 1];
-    enemy.progress += enemySpeed;
-    if (enemy.progress >= 1) {
+      }
+  
+      const start = pathPoints[enemy.pos];
+      const end = pathPoints[enemy.pos + 1];
+      enemy.progress += enemySpeed;
+      if (enemy.progress >= 1) {
         enemy.pos++;
         enemy.progress = 0;
+      }
     }
   }
-}
+  
 
 
 function drawEnemy() {
@@ -135,7 +147,19 @@ function spawnEnemy() {
     let hp = 1;
     enemiesSpawned++;
 
-    if (enemiesSpawned >= 45) {
+    if (enemiesSpawned == 200) {
+        color = "pink"; // Boss
+        hp = 100;
+    } else if (enemiesSpawned >= 100) {
+        color = "gold";
+        hp = 24;
+    } else if (enemiesSpawned >= 80) {
+        color = "orange";
+        hp = 16;
+    } else if (enemiesSpawned >= 60) {
+        color = "blue";
+        hp = 12;
+    } else if (enemiesSpawned >= 45) {
         color = "black";
         hp = 8;
     } else if (enemiesSpawned >= 30) {
@@ -298,6 +322,7 @@ function drawTowerPreview() {
 
 // Modyfikacja głównej pętli gry
 function gameLoop(timestamp) {
+
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     
     // Sprawdź czy trzeba dodać nowego przeciwnika
