@@ -58,8 +58,8 @@ const enemies = []; // Teraz przechowujemy wszystkich przeciwników w tablicy
 // Parametry przeciwnika
 const enemySpeed = 0.001;
 // Parametry gry
-const spawnInterval = 5000; // Co 2 sekundy nowy przeciwnik (w ms)
-
+const spawnInterval = 7000; // Co 2 sekundy nowy przeciwnik (w ms)
+let enemiesKilled = 0;
 function updateEnemy() {
 
   for (let i = enemies.length - 1; i >= 0; i--) {
@@ -105,8 +105,9 @@ function drawEnemy() {
 function drawEnemiesKilled() {
     ctx.fillStyle = 'black';
     ctx.font = '24px Arial';
-    ctx.fillText(`Zabitych: ${enemiesKilled}`, 20, 90);
+    ctx.fillText(`Zabitych: ${enemiesKilled}/200`, 20, 90);
 }
+
 
 function drawHP() {
     ctx.fillStyle = 'black';
@@ -128,18 +129,19 @@ class Tower {
   }
 }
 
-let enemiesKilled = 0;
+let enemiesSpawned = 0;
 function spawnEnemy() {
     let color = "red";
     let hp = 1;
+    enemiesSpawned++;
 
-    if (enemiesKilled >= 45) {
+    if (enemiesSpawned >= 45) {
         color = "black";
         hp = 8;
-    } else if (enemiesKilled >= 30) {
+    } else if (enemiesSpawned >= 30) {
         color = "green";
         hp = 4;
-    } else if (enemiesKilled >= 15) {
+    } else if (enemiesSpawned >= 15) {
         color = "purple";
         hp = 2;
     }
@@ -306,10 +308,10 @@ function gameLoop(timestamp) {
     }
     
     drawPath();
-    drawMoney()
+    drawMoney();
     updateEnemy();
     drawEnemy();
-    drawEnemiesKilled()
+    drawEnemiesKilled();
     drawTowerPreview();
     updateTowers();
     updateProjectiles();
