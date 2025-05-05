@@ -1,6 +1,4 @@
 //  TODO:
-//  ustawienie tego żeby podświetlenie range było adekwatne i nie wpisywane "z ręki" tylko z zmiennej range która może być w przyszłości zwiększana
-//  money
 //  utrudnianie w późniejszej fazie gry (więcej przeciwników, więcej HP enemies)
 //  ulepszanie wieży
 //  cennik jak i sterownie (instrukcja na boku po lewo i po prawo)
@@ -30,7 +28,7 @@ const pathPoints = [
     {x: 937, y: 600}
 ];
 
-// Funkcja rysująca trasę
+// Funkcja rysująca trasę 
 function drawPath() {
     ctx.strokeStyle = 'black';
     ctx.lineWidth = 2;
@@ -60,9 +58,8 @@ const enemies = []; // Teraz przechowujemy wszystkich przeciwników w tablicy
 // Parametry przeciwnika
 const enemySpeed = 0.001;
 // Parametry gry
-const spawnInterval = 10000; // Co 2 sekundy nowy przeciwnik (w ms)
+const spawnInterval = 5000; // Co 2 sekundy nowy przeciwnik (w ms)
 
-// Modyfikacja funkcji updateEnemy
 function updateEnemy() {
 
   for (let i = enemies.length - 1; i >= 0; i--) {
@@ -71,6 +68,7 @@ function updateEnemy() {
     if (enemy.hp <= 0) {
         enemies.splice(i, 1);
         money += ENEMY_REWARD;
+        enemiesKilled++;
         continue;
     }
     if (enemy.pos >= pathPoints.length - 1) {
@@ -89,7 +87,6 @@ function updateEnemy() {
 }
 
 
-// Modyfikacja funkcji drawEnemy
 function drawEnemy() {
     enemies.forEach(enemy => {
         const start = pathPoints[enemy.pos];
@@ -98,14 +95,19 @@ function drawEnemy() {
         const x = start.x + (end.x - start.x) * enemy.progress;
         const y = start.y + (end.y - start.y) * enemy.progress;
         
-        ctx.fillStyle = 'red';
+        ctx.fillStyle = enemy.color;
         ctx.beginPath();
         ctx.arc(x, y, 10, 0, Math.PI * 2);
         ctx.fill();
     });
 }
 
-// Nowa funkcja do rysowania HP
+function drawEnemiesKilled() {
+    ctx.fillStyle = 'black';
+    ctx.font = '24px Arial';
+    ctx.fillText(`Zabitych: ${enemiesKilled}`, 20, 90);
+}
+
 function drawHP() {
     ctx.fillStyle = 'black';
     ctx.font = '24px Arial';
@@ -119,26 +121,41 @@ class Tower {
   constructor(x, y) {
       this.x = x;
       this.y = y;
-      this.range =  100; // Zasięg w pikselach
+      this.range = 80; 
       this.cooldown = 0;
-      this.fireRate = 1; // Strzały na sekundę
+      this.fireRate = 0.1; 
       this.projectiles = [];
   }
 }
 
-// HP przeciwników
+let enemiesKilled = 0;
 function spawnEnemy() {
-  enemies.push({
-      pos: 0,
-      progress: 0,
-      hp: 1 
-  });
+    let color = "red";
+    let hp = 1;
+
+    if (enemiesKilled >= 45) {
+        color = "black";
+        hp = 8;
+    } else if (enemiesKilled >= 30) {
+        color = "green";
+        hp = 4;
+    } else if (enemiesKilled >= 15) {
+        color = "purple";
+        hp = 2;
+    }
+    enemies.push({
+        pos: 0,
+        progress: 0,
+        hp: hp,
+        color: color
+    });
 }
+
+
 
 // Tablica pocisków
 const projectiles = [];
 
-// Aktualizacja logiki wież
 function updateTowers() {
   towers.forEach(tower => {
       tower.cooldown = Math.max(0, tower.cooldown - 1);
@@ -160,7 +177,7 @@ function updateTowers() {
               }
           });
           
-          // Strzel jeśli znaleziono cel
+        
           if (target) {
               const targetPos = getEnemyPosition(target);
               projectiles.push({
@@ -176,7 +193,6 @@ function updateTowers() {
   });
 }
 
-// Aktualizacja pocisków
 function updateProjectiles() {
   for (let i = projectiles.length - 1; i >= 0; i--) {
       const projectile = projectiles[i];
@@ -257,12 +273,13 @@ function drawTowers() {
 function drawTowerPreview() {
   if (!spacePressed) return;
     
-    
+  const previewRange = new Tower(0,0).range; 
+
   ctx.save();
   ctx.globalAlpha = 0.2;
   ctx.fillStyle = 'blue';
   ctx.beginPath();
-  ctx.arc(mouseX, mouseY, 100 , 0, Math.PI * 2);
+  ctx.arc(mouseX, mouseY, previewRange, 0, Math.PI * 2);
   ctx.fill();
   ctx.restore();
 
@@ -273,7 +290,7 @@ function drawTowerPreview() {
   ctx.strokeStyle = 'black';
   ctx.lineWidth = 2;
   ctx.strokeRect(mouseX - 15, mouseY - 15, 30, 30);
-  ctx.restore();
+  ctx.restore(); 
 }
 
 
@@ -292,6 +309,7 @@ function gameLoop(timestamp) {
     drawMoney()
     updateEnemy();
     drawEnemy();
+    drawEnemiesKilled()
     drawTowerPreview();
     updateTowers();
     updateProjectiles();
