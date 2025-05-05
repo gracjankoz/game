@@ -42,13 +42,22 @@ function drawPath() {
     ctx.stroke();
 }
 
+// Monety
+let money = 200;
+const TOWER_COST = 100;
+const ENEMY_REWARD = 20;
+
+function drawMoney() {
+    ctx.fillStyle = 'gold';
+    ctx.font = '24px Arial';
+    ctx.fillText(`Monety: ${money}`, 20, 60);
+}
+
 let hp = 20;
 let spawnTimer = 0;
 const enemies = []; // Teraz przechowujemy wszystkich przeciwników w tablicy
 
 // Parametry przeciwnika
-let enemyPos = 0;
-let enemyProgress = 0;
 const enemySpeed = 0.001;
 // Parametry gry
 const spawnInterval = 10000; // Co 2 sekundy nowy przeciwnik (w ms)
@@ -61,6 +70,7 @@ function updateEnemy() {
     
     if (enemy.hp <= 0) {
         enemies.splice(i, 1);
+        money += ENEMY_REWARD;
         continue;
     }
     if (enemy.pos >= pathPoints.length - 1) {
@@ -225,8 +235,9 @@ canvas.addEventListener('mousemove', (e) => {
 
 // Nasłuchiwanie kliknięcia myszą (tylko gdy trzymana jest spacja)
 canvas.addEventListener('click', (e) => {
-    if (spacePressed) {
+    if (spacePressed && money >= TOWER_COST) {
         towers.push(new Tower(mouseX, mouseY));
+        money -= TOWER_COST;
     }
 });
 
@@ -278,6 +289,7 @@ function gameLoop(timestamp) {
     }
     
     drawPath();
+    drawMoney()
     updateEnemy();
     drawEnemy();
     drawTowerPreview();
