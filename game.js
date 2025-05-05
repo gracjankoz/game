@@ -1,5 +1,4 @@
 //  TODO:
-//  utrudnianie w późniejszej fazie gry (więcej przeciwników, więcej HP enemies)
 //  ulepszanie wieży
 //  cennik jak i sterownie (instrukcja na boku po lewo i po prawo)
 //  koniec gry (np. po zabiciu 1000 przeciwnikow)
@@ -148,8 +147,8 @@ function spawnEnemy() {
     enemiesSpawned++;
 
     if (enemiesSpawned == 200) {
-        color = "pink"; // Boss
-        hp = 100;
+        color = "pink";
+        hp = 50;
     } else if (enemiesSpawned >= 100) {
         color = "gold";
         hp = 24;
