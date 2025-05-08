@@ -1,13 +1,12 @@
 //  TODO:
-//  ulepszanie wieży
 //  cennik jak i sterownie (instrukcja na boku po lewo i po prawo)
-//  koniec gry (np. po zabiciu 1000 przeciwnikow)
 
 //  OPCJONALNE:
 //  mapa
 //  animacja i grafika przeciwników jak i wieży
 
 let gameOver = false;
+let selectedTower = null;
 const canvas = document.getElementById('canvas');
 canvas.width = 1000;
 canvas.height = 600;
@@ -130,15 +129,30 @@ const towers = [];
 let spacePressed = false;
 
 class Tower {
-  constructor(x, y) {
-      this.x = x;
-      this.y = y;
-      this.range = 80; 
-      this.cooldown = 0;
-      this.fireRate = 0.1; 
-      this.projectiles = [];
-  }
+    constructor(x, y) {
+        this.x = x;
+        this.y = y;
+        this.range = 80;
+        this.cooldown = 0;
+        this.fireRate = 0.1;
+        this.projectiles = [];
+        this.level = 1;
+        this.upgradeCost = 80;
+        this.damage = 1;
+    }
+
+    upgrade() {
+        if (money >= this.upgradeCost) {
+            money -= this.upgradeCost;
+            this.level++;
+            this.range += 15;
+            this.fireRate += 0.05;
+            this.damage += 1;
+            this.upgradeCost = Math.floor(this.upgradeCost * 1.5);
+        }
+    }
 }
+
 
 let enemiesSpawned = 0;
 function spawnEnemy() {
@@ -206,12 +220,13 @@ function updateTowers() {
           if (target) {
               const targetPos = getEnemyPosition(target);
               projectiles.push({
-                  from: {x: tower.x, y: tower.y},
-                  to: {x: targetPos.x, y: targetPos.y},
-                  progress: 0,
-                  speed: 0.1,
-                  target: target
-              });
+                from: {x: tower.x, y: tower.y},
+                to: {x: targetPos.x, y: targetPos.y},
+                progress: 0,
+                speed: 0.1,
+                target: target,
+                fromTower: tower
+            });
               tower.cooldown = 60 / tower.fireRate; // 60 klatek/sek
           }
       }
@@ -225,9 +240,9 @@ function updateProjectiles() {
       
       // Sprawdź trafienie
       if (projectile.progress >= 1) {
-          projectile.target.hp -= 1;
-          projectiles.splice(i, 1);
-      }
+        projectile.target.hp -= projectile.fromTower ? projectile.fromTower.damage : 1;
+        projectiles.splice(i, 1);
+    }
   }
 }
 
@@ -255,7 +270,7 @@ function drawProjectiles() {
   });
 }
 
-// Nasłuchiwanie klawiszy
+// Nasłuchiwanie klawiszy 
 document.addEventListener('keydown', (e) => {
     if (e.code === 'Space') spacePressed = true;
 });
@@ -263,6 +278,46 @@ document.addEventListener('keydown', (e) => {
 document.addEventListener('keyup', (e) => {
     if (e.code === 'Space') spacePressed = false;
 });
+
+canvas.addEventListener('click', (e) => {
+
+    if (spacePressed && money >= TOWER_COST) {
+        towers.push(new Tower(mouseX, mouseY));
+        money -= TOWER_COST;
+    }
+
+    if (spacePressed && money >= TOWER_COST) {
+        towers.push(new Tower(mouseX, mouseY));
+        selectedTower = null;
+        return;
+    }
+    if (!spacePressed) {
+        // Sprawdź, czy kliknięto w wieżę
+        selectedTower = null;
+        towers.forEach(tower => {
+            if (Math.abs(mouseX - tower.x) < 20 && Math.abs(mouseY - tower.y) < 20) {
+                selectedTower = tower;
+            }
+        });
+    }
+});
+
+function updateUpgradePanel() {
+    const panel = document.getElementById('upgradePanel');
+    const stats = document.getElementById('towerStats');
+    if (selectedTower) {
+        panel.style.display = 'block';
+        stats.innerText = `Poziom: ${selectedTower.level} | Zasięg: ${selectedTower.range} | Szybkostrzelność: ${selectedTower.fireRate.toFixed(2)} | Obrażenia: ${selectedTower.damage} | Ulepszenie: ${selectedTower.upgradeCost} monet`;
+        document.getElementById('upgradeBtn').disabled = money < selectedTower.upgradeCost;
+    } else {
+        panel.style.display = 'none';
+    }
+}
+
+document.getElementById('upgradeBtn').onclick = function() {
+    if (selectedTower) selectedTower.upgrade();
+    updateUpgradePanel();
+};
 
 // Nasłuchiwanie ruchu myszy
 let mouseX = 0;
@@ -273,15 +328,6 @@ canvas.addEventListener('mousemove', (e) => {
     mouseX = e.clientX - rect.left;
     mouseY = e.clientY - rect.top;
 });
-
-// Nasłuchiwanie kliknięcia myszą (tylko gdy trzymana jest spacja)
-canvas.addEventListener('click', (e) => {
-    if (spacePressed && money >= TOWER_COST) {
-        towers.push(new Tower(mouseX, mouseY));
-        money -= TOWER_COST;
-    }
-});
-
 
 // Rysowanie wież
 function drawTowers() {
@@ -341,6 +387,7 @@ function gameLoop(timestamp) {
     updateProjectiles();
     drawProjectiles();
     drawTowers();
+    updateUpgradePanel();
     drawHP();
     
     // Sprawdź przegraną
