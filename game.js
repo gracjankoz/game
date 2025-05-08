@@ -162,16 +162,28 @@ function spawnEnemy() {
 
     if (enemiesSpawned == 200) {
         color = "pink";
-        hp = 50;
+        hp = 80;
+    } else if (enemiesSpawned >= 180) {
+        color = "cyan";
+        hp = 36;
+    } else if (enemiesSpawned >= 160) {
+        color = "lime";
+        hp = 30;
+    } else if (enemiesSpawned >= 140) {
+        color = "brown";
+        hp = 26;
+    } else if (enemiesSpawned >= 120) {
+        color = "navy";
+        hp = 22;
     } else if (enemiesSpawned >= 100) {
         color = "gold";
-        hp = 24;
+        hp = 18;
     } else if (enemiesSpawned >= 80) {
         color = "orange";
-        hp = 16;
+        hp = 14;
     } else if (enemiesSpawned >= 60) {
         color = "blue";
-        hp = 12;
+        hp = 10;
     } else if (enemiesSpawned >= 45) {
         color = "black";
         hp = 8;
@@ -181,6 +193,9 @@ function spawnEnemy() {
     } else if (enemiesSpawned >= 15) {
         color = "purple";
         hp = 2;
+    } else {
+        color = "gray";
+        hp = 1;
     }
     enemies.push({
         pos: 0,
