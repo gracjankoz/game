@@ -5,6 +5,49 @@
 //  OPCJONALNE: 
 //  animacja i grafika przeciwników jak i wieży
 
+let mapData = null;
+let tilesetImg = null;
+let tileWidth = 16;
+let tileHeight = 16;
+let columns = 1;
+
+async function loadMap() {
+    const mapRes = await fetch('mapa/mapa.json');
+    mapData = await mapRes.json();
+
+    const tsxRes = await fetch('mapa/floor.tsx');
+    const tsxText = await tsxRes.text();
+    const parser = new DOMParser();
+    const tsxXml = parser.parseFromString(tsxText, "application/xml");
+    const imageElem = tsxXml.querySelector('image');
+    tileWidth = parseInt(tsxXml.querySelector('tileset').getAttribute('tilewidth'));
+    tileHeight = parseInt(tsxXml.querySelector('tileset').getAttribute('tileheight'));
+    columns = parseInt(tsxXml.querySelector('tileset').getAttribute('columns'));
+    const imageSource = imageElem.getAttribute('source');
+
+    tilesetImg = new Image();
+    tilesetImg.src = 'mapa/' + imageSource;
+}
+
+function drawMap() {
+    if (!mapData || !tilesetImg) return;
+    const layer = mapData.layers.find(l => l.type === 'tilelayer');
+    for (let i = 0; i < layer.data.length; i++) {
+        const gid = layer.data[i];
+        if (gid === 0) continue;
+        const tileIndex = gid - 1;
+        const sx = (tileIndex % columns) * tileWidth;
+        const sy = Math.floor(tileIndex / columns) * tileHeight;
+        const dx = (i % mapData.width) * tileWidth;
+        const dy = Math.floor(i / mapData.width) * tileHeight;
+        ctx.drawImage(
+            tilesetImg,
+            sx, sy, tileWidth, tileHeight,
+            dx, dy, tileWidth, tileHeight
+        );
+    }
+}
+
 let gameOver = false;
 let selectedTower = null;
 const canvas = document.getElementById('canvas');
@@ -392,7 +435,8 @@ function gameLoop(timestamp) {
         spawnTimer = 0;
     }
     
-    drawPath();
+    drawMap();
+    //drawPath();
     drawMoney();
     updateEnemy();
     drawEnemy();
@@ -419,7 +463,7 @@ function gameLoop(timestamp) {
     
     requestAnimationFrame(gameLoop);
 }
-
+loadMap();
 // Uruchomienie gry
 gameLoop();
 

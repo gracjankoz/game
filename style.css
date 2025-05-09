@@ -1,9 +1,9 @@
 canvas{ 
-  border: 1px solid black;
+border: 1px solid green;
 }
 
 body{
   display: flex;
   justify-content: center;
-
+  background-color: rgb(110, 168, 74);
 }
