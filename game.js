@@ -1,15 +1,15 @@
 //  TODO:
 //  cennik jak i sterownie (instrukcja na boku po lewo i po prawo)
+//  Mapa
 
-//  OPCJONALNE:
-//  mapa
+//  OPCJONALNE: 
 //  animacja i grafika przeciwników jak i wieży
 
 let gameOver = false;
 let selectedTower = null;
 const canvas = document.getElementById('canvas');
-canvas.width = 1000;
-canvas.height = 600;
+canvas.width = 1008;
+canvas.height = 608;
 const ctx = canvas.getContext('2d');
 
 // Punkty trasy
@@ -24,7 +24,7 @@ const pathPoints = [
     {x: 750, y: 50},
     {x: 750, y: 150},
     {x: 937, y: 150},
-    {x: 937, y: 600}
+    {x: 937, y: 608}
 ];
 
 // Funkcja rysująca trasę 
