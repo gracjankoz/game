@@ -1,12 +1,9 @@
-//  TODO:
-//  cennik jak i sterownie (instrukcja na boku po lewo i po prawo)  
-//  animacja i grafika przeciwników jak i wieży
-
 let mapData = null;
 let tilesetImg = null;
 let tileWidth = 16;
 let tileHeight = 16;
 let columns = 1;
+let gameWin = false;
 
 async function loadMap() {
     const mapRes = await fetch('mapa/mapa.json');
@@ -298,16 +295,25 @@ function updateTowers() {
 }
 
 function updateProjectiles() {
-  for (let i = projectiles.length - 1; i >= 0; i--) {
-      const projectile = projectiles[i];
-      projectile.progress += projectile.speed;
-      
-      // Sprawdź trafienie
-      if (projectile.progress >= 1) {
-        projectile.target.hp -= projectile.fromTower ? projectile.fromTower.damage : 1;
+for (let i = projectiles.length - 1; i >= 0; i--) {
+    const projectile = projectiles[i];
+    projectile.progress += projectile.speed;
+
+    if (projectile.progress >= 1) {
+        // Dodatkowe sprawdzenie, czy target jest obiektem i ma hp
+        if (
+            projectile.target &&
+            typeof projectile.target.hp === 'number' &&
+            enemies.includes(projectile.target) &&
+            projectile.target.hp > 0
+        ) {
+            projectile.target.hp -= projectile.fromTower ? projectile.fromTower.damage : 1;
+        }
+        // Usuwamy pocisk niezależnie od trafienia
         projectiles.splice(i, 1);
     }
-  }
+}
+
 }
 
 // Pomocnicza funkcja do pobierania pozycji przeciwnika
