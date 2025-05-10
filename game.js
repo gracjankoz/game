@@ -75,7 +75,7 @@ const pathPoints = [
 // Monety
 let money = 200;
 const TOWER_COST = 100;
-const ENEMY_REWARD = 20;
+const ENEMY_REWARD = 15;
 
 function drawMoney() {
     ctx.fillStyle = 'gold';
@@ -83,7 +83,7 @@ function drawMoney() {
     ctx.fillText(`Monety: ${money}`, 20, 60);
 }
 
-let hp = 20;
+let hp = 10;
 let spawnTimer = 0;
 const enemies = []; 
 
@@ -101,17 +101,9 @@ function updateEnemy() {
         money += ENEMY_REWARD;
         enemiesKilled++;
   
-        if (gameWin) {
-            ctx.font = "bold 48px Arial";
-            ctx.lineWidth = 6; 
-            ctx.strokeStyle = "black";
-            ctx.strokeText("WYGRAŁEŚ!", 350, 300);
-            ctx.fillStyle = "green";
-            ctx.fillText("WYGRAŁEŚ!", 350, 300);
-        
-            document.getElementById('restartBtn').style.display = 'block';
-            return;
-        }
+        if(enemiesKilled == 200)
+            gameWin = true;
+
         continue;
       }
   
@@ -178,8 +170,8 @@ class Tower {
             money -= this.upgradeCost;
             this.level++;
             this.range += 15;
-            this.fireRate += 0.05;
-            this.damage += 1;
+            this.fireRate += 0.03;
+            this.damage += 0.8;
             this.upgradeCost = Math.floor(this.upgradeCost * 1.5);
         }
     }
@@ -464,6 +456,19 @@ function gameLoop(timestamp) {
     updateUpgradePanel();
     drawHP();
     
+
+    if (gameWin) {
+        ctx.font = "bold 48px Arial";
+        ctx.lineWidth = 6; 
+        ctx.strokeStyle = "black";
+        ctx.strokeText("WYGRAŁEŚ!", 350, 300);
+        ctx.fillStyle = "green";
+        ctx.fillText("WYGRAŁEŚ!", 350, 300);
+
+        document.getElementById('restartBtn').style.display = 'block';
+    return;
+    }
+
     // Sprawdź przegraną
     if (hp <= 0) {
       ctx.fillStyle = 'red';
