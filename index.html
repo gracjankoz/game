@@ -5,15 +5,26 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Tower Defence</title>
   <link rel="stylesheet" href="style.css">
+  <script src="game.js" defer></script>
 </head>
 <body>
+<div class="main">
+  <div class="sterowanie">
+    <h3>Sterowanie</h3>
+    
+    <p>Stawianie wieży - przytrzymaj spację i kliknij aby postawić wieżę</p>
+    <p>Cena jednej wieży - 100 monet</p>
+  </div>
+  
   <canvas id="canvas" width="1008" height="608"></canvas>
   <button id="restartBtn" style="display:none; position:absolute; left:50%; top:60%; transform:translate(-50%, -50%); font-size:24px;">Restartuj grę</button>
-  <script src="game.js" defer></script>
+</div>
 
   <div id="upgradePanel" style="display:none; text-align:center; margin-top:10px;">
     <span id="towerStats"></span>
+    <br>
     <button id="upgradeBtn">Ulepsz</button>
-</div>
+  </div>
+  
 </body>
 </html>

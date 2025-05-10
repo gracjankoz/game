@@ -3,7 +3,30 @@ border: 1px solid green;
 }
 
 body{
-  display: flex;
-  justify-content: center;
   background-color: rgb(110, 168, 74);
+  font-family: Verdana, Geneva, Tahoma, sans-serif;
+}
+
+.sterowanie{
+text-align: center;
+width: 25%;
+}
+
+.main{
+  display: flex;
+  gap: 10px;
+}
+
+#upgradeBtn{
+  border: 0;
+  background-color: crimson;
+  font-size: 20px;
+  padding: 10px;
+  border-radius: 10px;
+  margin-top:10px;
+}
+
+#upgradeBtn:hover {
+  transition: 0.2s;
+  font-size: 25px;
 }
