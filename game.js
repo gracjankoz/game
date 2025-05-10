@@ -1,8 +1,5 @@
 //  TODO:
-//  cennik jak i sterownie (instrukcja na boku po lewo i po prawo)
-//  Mapa
-
-//  OPCJONALNE: 
+//  cennik jak i sterownie (instrukcja na boku po lewo i po prawo)  
 //  animacja i grafika przeciwników jak i wieży
 
 let mapData = null;
@@ -48,6 +45,14 @@ function drawMap() {
     }
 }
 
+const enemyImgs = [];
+for (let i = 1; i <= 12; i++) {
+    const img = new Image();
+    img.src = `mapa/Enemy_${i}.png`;
+    enemyImgs.push(img);
+}
+
+
 let gameOver = false;
 let selectedTower = null;
 const canvas = document.getElementById('canvas');
@@ -70,18 +75,6 @@ const pathPoints = [
     {x: 937, y: 608}
 ];
 
-// Funkcja rysująca trasę 
-function drawPath() {
-    ctx.strokeStyle = 'black';
-    ctx.lineWidth = 2;
-    ctx.beginPath();
-    ctx.moveTo(pathPoints[0].x, pathPoints[0].y);
-    for(let i = 1; i < pathPoints.length; i++) {
-        ctx.lineTo(pathPoints[i].x, pathPoints[i].y);
-    }
-    ctx.stroke();
-}
-
 // Monety
 let money = 200;
 const TOWER_COST = 100;
@@ -100,7 +93,7 @@ const enemies = []; // Teraz przechowujemy wszystkich przeciwników w tablicy
 // Parametry przeciwnika
 const enemySpeed = 0.001;
 // Parametry gry
-const spawnInterval = 7000; // Co 2 sekundy nowy przeciwnik (w ms)
+const spawnInterval = 7000;
 let enemiesKilled = 0;
 function updateEnemy() {
     for (let i = enemies.length - 1; i >= 0; i--) {
@@ -144,14 +137,10 @@ function drawEnemy() {
     enemies.forEach(enemy => {
         const start = pathPoints[enemy.pos];
         const end = pathPoints[Math.min(enemy.pos + 1, pathPoints.length - 1)];
-        
         const x = start.x + (end.x - start.x) * enemy.progress;
         const y = start.y + (end.y - start.y) * enemy.progress;
-        
-        ctx.fillStyle = enemy.color;
-        ctx.beginPath();
-        ctx.arc(x, y, 10, 0, Math.PI * 2);
-        ctx.fill();
+
+        ctx.drawImage(enemyImgs[enemy.spriteIndex], x - 16, y - 16, 32, 32);
     });
 }
 
@@ -202,49 +191,63 @@ function spawnEnemy() {
     let color = "red";
     let hp = 1;
     enemiesSpawned++;
+    let spriteIndex = 0;
 
-    if (enemiesSpawned == 200) {
+   if (enemiesSpawned == 200) {
         color = "pink";
         hp = 80;
+        spriteIndex = 11; // boss
     } else if (enemiesSpawned >= 180) {
         color = "cyan";
         hp = 36;
+        spriteIndex = 10;
     } else if (enemiesSpawned >= 160) {
         color = "lime";
         hp = 30;
+        spriteIndex = 9;
     } else if (enemiesSpawned >= 140) {
         color = "brown";
         hp = 26;
+        spriteIndex = 8;
     } else if (enemiesSpawned >= 120) {
         color = "navy";
         hp = 22;
+        spriteIndex = 7;
     } else if (enemiesSpawned >= 100) {
         color = "gold";
         hp = 18;
+        spriteIndex = 6;
     } else if (enemiesSpawned >= 80) {
         color = "orange";
         hp = 14;
+        spriteIndex = 5;
     } else if (enemiesSpawned >= 60) {
         color = "blue";
         hp = 10;
+        spriteIndex = 4;
     } else if (enemiesSpawned >= 45) {
         color = "black";
         hp = 8;
+        spriteIndex = 3;
     } else if (enemiesSpawned >= 30) {
         color = "green";
         hp = 4;
+        spriteIndex = 2;
     } else if (enemiesSpawned >= 15) {
         color = "purple";
         hp = 2;
+        spriteIndex = 1;
     } else {
         color = "gray";
         hp = 1;
+        spriteIndex = 0;
     }
     enemies.push({
         pos: 0,
         progress: 0,
         hp: hp,
-        color: color
+        color: color,
+        spriteIndex: spriteIndex
     });
 }
 
@@ -388,17 +391,24 @@ canvas.addEventListener('mousemove', (e) => {
 });
 
 // Rysowanie wież
+
+const towerImg = new Image();
+towerImg.src = 'mapa/Tower_Blue.png';
+
 function drawTowers() {
   towers.forEach(tower => {
-      ctx.fillStyle = 'blue';
-      ctx.fillRect(tower.x - 15, tower.y - 15, 30, 30); // Kwadrat 30x30px, środek w miejscu kliknięcia
-      ctx.strokeStyle = 'black';
-      ctx.lineWidth = 2;
-      ctx.strokeRect(tower.x - 15, tower.y - 15, 30, 30);
+     ctx.drawImage(towerImg, tower.x - 15, tower.y - 30, 30, 60);
+     if (tower === selectedTower) {
+          ctx.save();
+          ctx.strokeStyle = 'gold';
+          ctx.lineWidth = 3;
+          ctx.strokeRect(tower.x - 15, tower.y - 30, 30, 60);
+          ctx.restore();
+     }
   });
 }
 
-//Podgląd gdzie będzie wieża
+
 function drawTowerPreview() {
   if (!spacePressed) return;
     
@@ -414,29 +424,25 @@ function drawTowerPreview() {
 
   ctx.save();
   ctx.globalAlpha = 0.5;
-  ctx.fillStyle = 'blue';
-  ctx.fillRect(mouseX - 15, mouseY - 15, 30, 30);
-  ctx.strokeStyle = 'black';
-  ctx.lineWidth = 2;
-  ctx.strokeRect(mouseX - 15, mouseY - 15, 30, 30);
-  ctx.restore(); 
+  ctx.drawImage(towerImg, mouseX - 15, mouseY - 30, 30, 60);
+  ctx.restore();
 }
 
 
-// Modyfikacja głównej pętli gry
+
 function gameLoop(timestamp) {
 
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     
-    // Sprawdź czy trzeba dodać nowego przeciwnika
-    spawnTimer += 16; // Zakładamy ~60 klatek/sek (16ms na klatkę)
-    if (spawnTimer >= spawnInterval) {
+
+    spawnTimer += 16; 
+    if (spawnTimer >= spawnInterval && enemiesSpawned < 201) {
         spawnEnemy();
         spawnTimer = 0;
     }
+
     
     drawMap();
-    //drawPath();
     drawMoney();
     updateEnemy();
     drawEnemy();
