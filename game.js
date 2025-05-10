@@ -88,7 +88,7 @@ function drawMoney() {
 
 let hp = 20;
 let spawnTimer = 0;
-const enemies = []; // Teraz przechowujemy wszystkich przeciwników w tablicy
+const enemies = []; 
 
 // Parametry przeciwnika
 const enemySpeed = 0.001;
@@ -104,13 +104,16 @@ function updateEnemy() {
         money += ENEMY_REWARD;
         enemiesKilled++;
   
-        if (enemiesKilled >= 200) {
-          ctx.fillStyle = 'green';
-          ctx.font = '48px Arial';
-          ctx.fillText('WYGRAŁEŚ!', canvas.width/2 - 120, canvas.height/2);
-          document.getElementById('restartBtn').style.display = 'block';
-          gameOver = true;
-          return;
+        if (gameWin) {
+            ctx.font = "bold 48px Arial";
+            ctx.lineWidth = 6; 
+            ctx.strokeStyle = "black";
+            ctx.strokeText("WYGRAŁEŚ!", 350, 300);
+            ctx.fillStyle = "green";
+            ctx.fillText("WYGRAŁEŚ!", 350, 300);
+        
+            document.getElementById('restartBtn').style.display = 'block';
+            return;
         }
         continue;
       }
@@ -436,7 +439,7 @@ function gameLoop(timestamp) {
     
 
     spawnTimer += 16; 
-    if (spawnTimer >= spawnInterval && enemiesSpawned < 201) {
+    if (spawnTimer >= spawnInterval && enemiesSpawned < 200) {
         spawnEnemy();
         spawnTimer = 0;
     }
