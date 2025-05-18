@@ -6,10 +6,10 @@ let columns = 1;
 let gameWin = false;
 
 async function loadMap() {
-    const mapRes = await fetch('mapa/mapa.json');
+    const mapRes = await fetch('images/mapa.json');
     mapData = await mapRes.json();
 
-    const tsxRes = await fetch('mapa/floor.tsx');
+    const tsxRes = await fetch('images/floor.tsx');
     const tsxText = await tsxRes.text();
     const parser = new DOMParser();
     const tsxXml = parser.parseFromString(tsxText, "application/xml");
@@ -20,7 +20,7 @@ async function loadMap() {
     const imageSource = imageElem.getAttribute('source');
 
     tilesetImg = new Image();
-    tilesetImg.src = 'mapa/' + imageSource;
+    tilesetImg.src = 'images/' + imageSource;
 }
 
 function drawMap() {
@@ -45,7 +45,7 @@ function drawMap() {
 const enemyImgs = [];
 for (let i = 1; i <= 12; i++) {
     const img = new Image();
-    img.src = `mapa/Enemy_${i}.png`;
+    img.src = `images/Enemy_${i}.png`;
     enemyImgs.push(img);
 }
 
@@ -88,7 +88,7 @@ let spawnTimer = 0;
 const enemies = []; 
 
 // Parametry przeciwnika
-const enemySpeed = 0.001;
+const enemySpeed = 0.002;
 // Parametry gry
 const spawnInterval = 7000;
 let enemiesKilled = 0;
@@ -158,10 +158,10 @@ class Tower {
         this.y = y;
         this.range = 80;
         this.cooldown = 0;
-        this.fireRate = 0.1;
+        this.fireRate = 0.15;
         this.projectiles = [];
         this.level = 1;
-        this.upgradeCost = 80;
+        this.upgradeCost = 70;
         this.damage = 1;
     }
 
@@ -170,9 +170,9 @@ class Tower {
             money -= this.upgradeCost;
             this.level++;
             this.range += 15;
-            this.fireRate += 0.03;
+            this.fireRate += 0.04;
             this.damage += 0.8;
-            this.upgradeCost = Math.floor(this.upgradeCost * 1.5);
+            this.upgradeCost = Math.floor(this.upgradeCost * 1.4);
         }
     }
 }
@@ -394,7 +394,7 @@ canvas.addEventListener('mousemove', (e) => {
 // Rysowanie wież
 
 const towerImg = new Image();
-towerImg.src = 'mapa/Tower_Blue.png';
+towerImg.src = 'images/Tower_Blue.png';
 
 function drawTowers() {
   towers.forEach(tower => {
