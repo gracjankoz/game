@@ -80,10 +80,9 @@ const ENEMY_REWARD = 15;
 function drawMoney() {
     ctx.fillStyle = 'gold';
     ctx.font = '24px Arial';
-    ctx.fillText(`Monety: ${money}`, 20, 60);
+    ctx.fillText(`Monety: ${money}`, 20, 30);
 }
 
-let hp = 10;
 let spawnTimer = 0;
 const enemies = []; 
 
@@ -108,9 +107,8 @@ function updateEnemy() {
       }
   
       if (enemy.pos >= pathPoints.length - 1) {
-        hp--;
-        enemies.splice(i, 1);
-        continue;
+        gameOver = true;
+        return;
       }
   
       const start = pathPoints[enemy.pos];
@@ -139,14 +137,7 @@ function drawEnemy() {
 function drawEnemiesKilled() {
     ctx.fillStyle = 'black';
     ctx.font = '24px Arial';
-    ctx.fillText(`Zabitych: ${enemiesKilled}/200`, 20, 90);
-}
-
-
-function drawHP() {
-    ctx.fillStyle = 'black';
-    ctx.font = '24px Arial';
-    ctx.fillText(`HP: ${hp}`, 20, 30);
+    ctx.fillText(`Zabitych: ${enemiesKilled}/200`, 20, 60);
 }
 
 const towers = [];
@@ -454,8 +445,6 @@ function gameLoop(timestamp) {
     drawProjectiles();
     drawTowers();
     updateUpgradePanel();
-    drawHP();
-    
 
     if (gameWin) {
         ctx.font = "bold 48px Arial";
@@ -470,7 +459,7 @@ function gameLoop(timestamp) {
     }
 
     // Sprawdź przegraną
-    if (hp <= 0) {
+    if (gameOver) {
       ctx.fillStyle = 'red';
       ctx.font = '48px Arial';
       ctx.fillText('PRZEGRANA!', canvas.width/2 - 120, canvas.height/2);
